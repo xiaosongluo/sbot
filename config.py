@@ -5,7 +5,7 @@ import os
 load_dotenv()
 
 # 从环境变量中获取敏感信息
-ENV = os.getenv("ENVIRONMENT", "DEV")
+ENV = os.getenv("ENV", "DEV")
 DING_SECRET = os.getenv("DING_SECRET")
 DING_TOKEN = os.getenv("DING_TOKEN")
 API_ID = int(os.getenv("API_ID"))
