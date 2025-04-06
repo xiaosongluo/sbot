@@ -21,7 +21,6 @@ class PANNewsHandler(BaseHandler):
         msg = event.message
 
         analysis_result = await self._analyze_content(msg.text)
-        logging.info(f"Handling PANNews message LLM raw result: {analysis_result}")
 
         if analysis_result:
             try:
@@ -47,6 +46,7 @@ class PANNewsHandler(BaseHandler):
 
     async def _analyze_content(self, content):
         try:
+            logging.info(f"Handling PANNews message LLM prompt: {content}")
             response = Application.call(
                 api_key=DASHSCOPE_API_KEY, app_id=DASHSCOPE_APP_ID, prompt=content
             )
@@ -60,6 +60,9 @@ class PANNewsHandler(BaseHandler):
                 return None
             else:
                 try:
+                    logging.info(
+                        f"Handling PANNews message LLM raw result: {response.output}"
+                    )
                     return response.output
                 except AttributeError:
                     logging.error("无法从响应中获取输出信息。")

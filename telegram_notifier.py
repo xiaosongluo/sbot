@@ -47,13 +47,13 @@ class TelegramNotifier:
             chat_id = (
                 event.chat_id if isinstance(event.chat_id, int) else str(event.chat_id)
             )
-            logging.error(f"chat_id 转换: 转换前{event.chat_id}，转换后{chat_id}")
+            logging.info(f"chat_id 转换: 转换前{event.chat_id}，转换后{chat_id}")
             handler = self.channel_handlers.get(chat_id)
-            logging.error(f"handler锁定: {handler.__qualname__}")
+            logging.info(f"handler锁定: {handler.__qualname__}")
             if handler is not None:
                 await handler(event)
         except RPCError as e:
-            logging.error(f"网络错误: {str(e)}，10秒后重试")
+            logging.error(f"网络错误: {str(e)}, 10秒后重试")
             await asyncio.sleep(10)
             await self.on_channel_message(event)
         except Exception as e:
