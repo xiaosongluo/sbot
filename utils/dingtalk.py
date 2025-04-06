@@ -1,3 +1,4 @@
+# encoding: utf-8
 import hmac
 import hashlib
 import base64

@@ -1,9 +1,12 @@
+# encoding: utf-8
 import asyncio
 import logging
 from os import linesep
-from config import DING_SECRET, DING_TOKEN, KEY_WORDS
+from config import DING_SECRET, DING_TOKEN
 from utils.dingtalk import send_dingtalk_notification
 
+# 需要转发的关键词
+KEY_WORDS = ["TGE", "xiaosongluo"]
 
 async def default_handler(event):
     content = _parse_message(event)

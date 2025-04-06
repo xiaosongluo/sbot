@@ -5,7 +5,8 @@ import traceback
 from telethon import TelegramClient, events
 from telethon.errors import RPCError
 from config import ENV, API_ID, API_HASH, PROXY
-import strategy.default
+import strategy.base
+import strategy.pannews
 
 
 class TelegramNotifier:
@@ -17,14 +18,17 @@ class TelegramNotifier:
         else:
             raise ValueError(f"不支持的环境: {ENV}")
 
+        # 实例化
+        base_handler = strategy.base.BaseHandler()
+        pannews_handler = strategy.pannews.PANNewsHandler()
+
         # 定义不同频道的处理策略
         self.channel_handlers = {
+            1636146879: pannews_handler.handle_message,  # xiaosongluo
+            -1002450025950: base_handler.handle_message,  # Binance Wallet Anncouncements
+            -1001456088978: pannews_handler.handle_message,  # PANNews
             # 默认处理函数
-            -1002450025950: strategy.default.default_handler,
-            "xiaosongluo": strategy.default.default_handler,
-            -1001456088978: strategy.default.default_handler,
-            # 默认处理函数
-            "default": strategy.default.default_handler,
+            # "default": strategy.default.default_handler,
         }
 
         # 从 channel_handlers 中形成 TARGET_CHANNELS
@@ -43,10 +47,11 @@ class TelegramNotifier:
             chat_id = (
                 event.chat_id if isinstance(event.chat_id, int) else str(event.chat_id)
             )
-            handler = self.channel_handlers.get(
-                chat_id, self.channel_handlers["default"]
-            )
-            await handler(event)
+            logging.error(f"chat_id 转换: 转换前{event.chat_id}，转换后{chat_id}")
+            handler = self.channel_handlers.get(chat_id)
+            logging.error(f"handler锁定: {handler.__qualname__}")
+            if handler is not None:
+                await handler(event)
         except RPCError as e:
             logging.error(f"网络错误: {str(e)}，10秒后重试")
             await asyncio.sleep(10)

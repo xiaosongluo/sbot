@@ -10,11 +10,8 @@ DING_SECRET = os.getenv("DING_SECRET")
 DING_TOKEN = os.getenv("DING_TOKEN")
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
-
-# 非敏感信息可以继续硬编码或从其他配置文件中读取
-TARGET_CHANNELS = [-1002450025950, "xiaosongluo", -1001456088978]
-# 需要转发的关键词
-KEY_WORDS = ["TGE", "xiaosongluo"]
+DASHSCOPE_APP_ID = os.getenv("DASHSCOPE_APP_ID")
+DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
 
 # 代理配置
 PROXY = ("http", "127.0.0.1", 7890)
