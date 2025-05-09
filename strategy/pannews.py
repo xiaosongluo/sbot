@@ -30,7 +30,10 @@ class PANNewsHandler(BaseHandler):
                 )
                 if result_dict is not None:
                     if (
+                        # 有影响 & 强相关 & 当前发生的
                         result_dict.get("result") != "NONE"
+                        and result_dict.get("relevance") == "STRONG"
+                        and result_dict.get("tense") == "PRESENT"
                         and result_dict.get("analysis") != "NONE"
                     ):
                         await self._send_notification(
