@@ -30,7 +30,7 @@ def send_dingtalk_notification(message, secret, token):
     headers = {"Content-Type": "application/json"}
     payload = {
         "msgtype": "markdown",
-        "markdown": {"title": "📢 Telegram同步通知", "text": message},
+        "markdown": {"title": "📢同步通知", "text": message},
     }
 
     response = requests.post(url, json=payload, headers=headers, timeout=5)
