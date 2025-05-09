@@ -13,5 +13,9 @@ API_HASH = os.getenv("API_HASH")
 DASHSCOPE_APP_ID = os.getenv("DASHSCOPE_APP_ID")
 DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
 
+# 价格监控配置
+PRICE_CHECK_INTERVAL = int(os.getenv("PRICE_CHECK_INTERVAL", 60))  # 默认60秒检查一次
+PRICE_CHANGE_THRESHOLD = float(os.getenv("PRICE_CHANGE_THRESHOLD", 1.0))  # 默认1%的波动阈值
+
 # 代理配置
 PROXY = ("http", "127.0.0.1", 7890)
