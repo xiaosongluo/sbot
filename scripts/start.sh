@@ -20,7 +20,7 @@ mkdir -p logs
 
 # 启动程序
 echo "启动服务..."
-nohup python3 -m sbot.sbot > logs/sbot.log 2>&1 &
+nohup python -m sbot.sbot > logs/sbot.log 2>&1 &
 
 # 保存进程ID
 echo $! > sbot.pid
