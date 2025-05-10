@@ -1,8 +1,8 @@
 # encoding: utf-8
 import asyncio
 import logging
-from app.telegram_notifier import TelegramNotifier
-from app.price_monitor import PriceMonitor
+from telegram_notifier import TelegramNotifier
+from price_monitor import PriceMonitor
 from utils.log import setup_logging
 
 # ========== 主程序入口 ==========

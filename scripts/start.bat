@@ -20,7 +20,7 @@ if not exist logs mkdir logs
 
 :: 启动程序
 echo 启动程序...
-start "SBot Price Monitor" cmd /c "python -m sbot.sbot > logs\sbot.log 2>&1"
+start "SBot Monitor" cmd /c "python sbot.py > logs\sbot.log 2>&1"
 
 echo 程序已启动
 echo 日志文件: logs\sbot.log

@@ -146,3 +146,5 @@ pytrader/user_config.sh
 *.parquet
 
 **.DS_Store
+
+user_session.session
