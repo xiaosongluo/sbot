@@ -2,12 +2,12 @@
 import asyncio
 import logging
 from os import linesep
-
-from config import DING_SECRET, DING_TOKEN
+from config import CONFIG_MANAGER
 from utils.dingtalk import send_dingtalk_notification
 
 # 需要转发的关键词
 KEY_WORDS = ["TGE", "xiaosongluo"]
+
 
 class BaseHandler:
     def __init__(self):
@@ -59,7 +59,11 @@ class BaseHandler:
         """发送钉钉通知"""
         try:
             await asyncio.to_thread(
-                send_dingtalk_notification, markdown_text, DING_SECRET, DING_TOKEN
+                send_dingtalk_notification,
+                "📢同步通知",
+                markdown_text,
+                CONFIG_MANAGER.get('DING_SECRET'),
+                CONFIG_MANAGER.get('DING_TOKEN'),
             )
             logging.info("钉钉通知发送成功")
         except Exception as e:

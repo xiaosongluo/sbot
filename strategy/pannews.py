@@ -3,7 +3,7 @@ from http import HTTPStatus
 import json
 import logging
 from os import linesep
-from config import DASHSCOPE_API_KEY, DASHSCOPE_APP_ID
+from config import CONFIG_MANAGER
 from strategy.base import BaseHandler
 from dashscope import Application
 
@@ -51,7 +51,9 @@ class PANNewsHandler(BaseHandler):
         try:
             logging.info(f"Handling PANNews message LLM prompt: {content}")
             response = Application.call(
-                api_key=DASHSCOPE_API_KEY, app_id=DASHSCOPE_APP_ID, prompt=content
+                api_key=CONFIG_MANAGER.get("DASHSCOPE_API_KEY"),
+                app_id=CONFIG_MANAGER.get("DASHSCOPE_APP_ID"),
+                prompt=content,
             )
             if response.status_code != HTTPStatus.OK:
                 logging.error(f"request_id={response.request_id}")

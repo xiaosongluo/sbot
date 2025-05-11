@@ -23,14 +23,14 @@ def beijing_time():
     return utc_now.astimezone(timezone(timedelta(hours=8))).strftime("%d/%m %H:%M:%S")
 
 
-def send_dingtalk_notification(message, secret, token):
+def send_dingtalk_notification(title, message, secret, token):
     ts, sign = sign_dingtalk_secret(secret)
     url = f"https://oapi.dingtalk.com/robot/send?access_token={token}&sign={sign}&timestamp={ts}"
 
     headers = {"Content-Type": "application/json"}
     payload = {
         "msgtype": "markdown",
-        "markdown": {"title": "📢同步通知", "text": message},
+        "markdown": {"title": title, "text": message},
     }
 
     response = requests.post(url, json=payload, headers=headers, timeout=5)

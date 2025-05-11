@@ -4,19 +4,29 @@ import logging
 import traceback
 from telethon import TelegramClient, events
 from telethon.errors import RPCError
-from config import ENV, API_ID, API_HASH, PROXY
+from config import CONFIG_MANAGER
 import strategy.base
 import strategy.pannews
 
 
 class TelegramNotifier:
     def __init__(self):
-        if ENV == "DEV":
-            self.client = TelegramClient("user_session", API_ID, API_HASH, proxy=PROXY)
-        elif ENV == "PROD":
-            self.client = TelegramClient("user_session", API_ID, API_HASH)
+        env = CONFIG_MANAGER.get("ENV")
+        if env == "DEV":
+            self.client = TelegramClient(
+                "user_session",
+                CONFIG_MANAGER.get("API_ID"),
+                CONFIG_MANAGER.get("API_HASH"),
+                proxy=CONFIG_MANAGER.get("PROXY"),
+            )
+        elif env == "PROD":
+            self.client = TelegramClient(
+                "user_session",
+                CONFIG_MANAGER.get("API_ID"),
+                CONFIG_MANAGER.get("API_HASH"),
+            )
         else:
-            raise ValueError(f"不支持的环境: {ENV}")
+            raise ValueError(f"不支持的环境: {env}")
 
         # 实例化
         base_handler = strategy.base.BaseHandler()
