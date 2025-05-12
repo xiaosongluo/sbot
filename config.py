@@ -43,6 +43,7 @@ class ConfigManager:
             # 价格监控参数配置
             "PRICE_CHECK_INTERVAL": int(os.getenv("PRICE_CHECK_INTERVAL", 60)),
             "PRICE_CHANGE_THRESHOLD": float(os.getenv("PRICE_CHANGE_THRESHOLD", 1.0)),
+            "PRICE_SYMBOLS": os.getenv("PRICE_SYMBOLS", "BTCUSDT,BNBUSDT").split(","),
         }
 
     def get(self, key, default=None):

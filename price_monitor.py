@@ -9,10 +9,12 @@ import aiohttp
 
 class PriceMonitor:
     def __init__(self):
-        self.btc_last_price = None
-        self.bnb_last_price = None
+        self.price_symbols = CONFIG_MANAGER.get("PRICE_SYMBOLS")
+        self.last_prices = {symbol: None for symbol in self.price_symbols}
         self.last_checked = None
-        self.price_history = {}  # 存储价格历史数据
+        self.price_history = {
+            symbol: [] for symbol in self.price_symbols
+        }  # 存储价格历史数据
         self.check_interval = CONFIG_MANAGER.get(
             "PRICE_CHECK_INTERVAL"
         )  # 检查间隔（秒）
@@ -42,78 +44,61 @@ class PriceMonitor:
                 await asyncio.sleep(60)  # 发生错误时等待更长时间
 
     async def check_prices(self):
-        """检查BTC和BNB的价格波动"""
+        """检查指定交易对的价格波动"""
         current_time = datetime.now()
 
         # 获取当前价格
-        btc_price, bnb_price = await self.fetch_current_prices()
-        if btc_price is None or bnb_price is None:
+        current_prices = await self.fetch_current_prices()
+        if not current_prices:
             return
 
         # 更新价格历史
-        self._update_price_history("BTC", btc_price, current_time)
-        self._update_price_history("BNB", bnb_price, current_time)
+        for symbol, price in current_prices.items():
+            self._update_price_history(symbol, price, current_time)
 
         # 首次检查，只记录当前价格
         if self.last_checked is None:
-            self.btc_last_price = btc_price
-            self.bnb_last_price = bnb_price
+            self.last_prices = current_prices
             self.last_checked = current_time
-            logging.info(f"首次价格检查完成: BTC=${btc_price}, BNB=${bnb_price}")
+            logging.info(
+                f"首次价格检查完成: {', '.join([f'{symbol}=${price}' for symbol, price in current_prices.items()])}"
+            )
             return
 
-        # 检查BTC波动
-        btc_change = self._calculate_price_change(self.btc_last_price, btc_price)
-        if abs(btc_change) >= self.threshold:
-            await self._send_volatility_alert(
-                "BTC", btc_price, self.btc_last_price, btc_change
-            )
+        # 检查每个交易对的波动
+        for symbol, price in current_prices.items():
+            old_price = self.last_prices[symbol]
+            change = self._calculate_price_change(old_price, price)
+            if abs(change) >= self.threshold:
+                await self._send_volatility_alert(symbol, price, old_price, change)
 
-        # 检查BNB波动
-        bnb_change = self._calculate_price_change(self.bnb_last_price, bnb_price)
-        if abs(bnb_change) >= self.threshold:
-            await self._send_volatility_alert(
-                "BNB", bnb_price, self.bnb_last_price, bnb_change
-            )
-
-        # 更新最后检查价格和时间
-        self.btc_last_price = btc_price
-        self.bnb_last_price = bnb_price
+                # 更新最后检查价格和时间
+        self.last_prices = current_prices
         self.last_checked = current_time
         logging.info(
-            f"价格检查完成: BTC=${btc_price} ({btc_change:.2f}%), BNB=${bnb_price} ({bnb_change:.2f}%)"
+            f"价格检查完成: {', '.join([f'{symbol}=${price} ({change:.2f}%)' for symbol, price in current_prices.items()])}"
         )
 
     async def fetch_current_prices(self):
-        """从币安API获取BTC和BNB的当前价格"""
+        """从币安API获取指定交易对的当前价格"""
+        current_prices = {}
         try:
             async with aiohttp.ClientSession() as session:
-                # 获取BTC价格
-                async with session.get(
-                    "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
-                    proxy=self.proxy,
-                ) as response:
-                    if response.status != 200:
-                        logging.error(f"获取BTC价格失败，状态码: {response.status}")
-                        return None, None
-                    btc_data = await response.json()
-                    btc_price = float(btc_data["price"])
+                for symbol in self.price_symbols:
+                    url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
+                    async with session.get(url, proxy=self.proxy) as response:
+                        if response.status != 200:
+                            logging.error(
+                                f"获取{symbol}价格失败，状态码: {response.status}"
+                            )
+                            return None
+                        data = await response.json()
+                        current_prices[symbol] = float(data["price"])
 
-                # 获取BNB价格
-                async with session.get(
-                    "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT",
-                    proxy=self.proxy,
-                ) as response:
-                    if response.status != 200:
-                        logging.error(f"获取BNB价格失败，状态码: {response.status}")
-                        return None, None
-                    bnb_data = await response.json()
-                    bnb_price = float(bnb_data["price"])
-
-                return btc_price, bnb_price
+                return current_prices
         except Exception as e:
             logging.error(f"获取价格时发生错误: {str(e)}")
-            return None, None
+            return None
 
     def _update_price_history(self, symbol, price, timestamp):
         """更新价格历史记录"""
@@ -144,20 +129,20 @@ class PriceMonitor:
 
         # 构建Markdown格式的消息
         markdown_text = f"""
-**{symbol}价格大幅波动通知**
-
-📅 时间：{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-💰 当前价格：${current_price:.2f}
-📊 变化幅度：{trend}{change_abs:.2f}%
-📉 上次价格：${last_price:.2f}
-
+**{symbol}价格大幅波动通知**\n
+\n
+📅 时间：{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n
+💰 当前价格：${current_price:.2f}\n
+📊 变化幅度：{trend}{change_abs:.2f}%\n
+📉 上次价格：${last_price:.2f}\n
+\n
 **请关注市场动态！**
 """
 
         try:
             await asyncio.to_thread(
                 send_dingtalk_notification,
-                "📢同步通知",
+                "📢市场价格同步通知",
                 markdown_text,
                 CONFIG_MANAGER.get("DING_SECRET"),
                 CONFIG_MANAGER.get("DING_TOKEN"),
