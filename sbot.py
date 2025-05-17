@@ -15,10 +15,10 @@ async def main():
     tasks = []
     if CONFIG_MANAGER.get('ENABLE_PRICE_MONITOR'):
         price_monitor = PriceMonitor()
-        tasks.append(asyncio.create_task(price_monitor.run()))
+        tasks.append(asyncio.create_task(price_monitor.start_monitoring()))
     if CONFIG_MANAGER.get('ENABLE_TELEGRAM_LISTENER'):
         telegram_notifier = TelegramNotifier()
-        tasks.append(asyncio.create_task(telegram_notifier.run()))
+        tasks.append(asyncio.create_task(telegram_notifier.start_notifier()))
 
     try:
         await asyncio.gather(*tasks)

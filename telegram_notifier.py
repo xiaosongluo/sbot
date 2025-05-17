@@ -1,5 +1,6 @@
 # encoding: utf-8
 import asyncio
+from datetime import datetime
 import logging
 import traceback
 from telethon import TelegramClient, events
@@ -28,19 +29,20 @@ class TelegramNotifier:
         else:
             raise ValueError(f"不支持的环境: {env}")
 
+    async def start_notifier(self):
         # 实例化
         base_handler = strategy.base.BaseHandler()
         pannews_handler = strategy.pannews.PANNewsHandler()
 
         # 定义不同频道的处理策略
         self.channel_handlers = {
-            1636146879: pannews_handler.handle_message,  # xiaosongluo
+            1636146879: base_handler.handle_message,  # xiaosongluo
+            7995411861: base_handler.handle_message,  # cqulxs
             -1002450025950: base_handler.handle_message,  # Binance Wallet Anncouncements
             -1001456088978: pannews_handler.handle_message,  # PANNews
             # 默认处理函数
             # "default": strategy.default.default_handler,
         }
-
         # 从 channel_handlers 中形成 TARGET_CHANNELS
         self.TARGET_CHANNELS = list(self.channel_handlers.keys())
         if "default" in self.TARGET_CHANNELS:
@@ -50,6 +52,21 @@ class TelegramNotifier:
         self.client.add_event_handler(
             self.on_channel_message, events.NewMessage(chats=self.TARGET_CHANNELS)
         )
+
+        await self.client.connect()
+        if not await self.client.is_user_authorized():
+            logging.error("Telegram客户端未授权，请检查API_ID和API_HASH")
+            exit(1)
+        await self.client.run_until_disconnected()
+
+        while True:
+            try:
+                utc_now = datetime.now()
+                logging.info(f"Telegram 事件监听中: {utc_now}")
+                await asyncio.sleep(60)
+            except Exception as e:
+                logging.error(f"Telegram 事件监听过程中发生错误: {str(e)}")
+                await asyncio.sleep(60)  # 发生错误时等待更长时间
 
     async def on_channel_message(self, event):
         """处理频道消息"""
