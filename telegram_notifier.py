@@ -39,7 +39,7 @@ class TelegramNotifier:
             1636146879: base_handler.handle_message,  # xiaosongluo
             7995411861: base_handler.handle_message,  # cqulxs
             -1002450025950: base_handler.handle_message,  # Binance Wallet Anncouncements
-            -1001456088978: pannews_handler.handle_message,  # PANNews
+            # -1001456088978: pannews_handler.handle_message,  # PANNews
             # 默认处理函数
             # "default": strategy.default.default_handler,
         }
