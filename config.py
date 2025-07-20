@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -41,9 +42,7 @@ class ConfigManager:
             ).lower()
             == "true",
             # 价格监控参数配置
-            "PRICE_CHECK_INTERVAL": int(os.getenv("PRICE_CHECK_INTERVAL", 60)),
-            "PRICE_CHANGE_THRESHOLD": float(os.getenv("PRICE_CHANGE_THRESHOLD", 1.0)),
-            "PRICE_SYMBOLS": os.getenv("PRICE_SYMBOLS", "BTCUSDT,BNBUSDT").split(","),
+            "PRICE_MONITOR_CONFIG": json.loads(os.getenv("PRICE_MONITOR_CONFIG", '{}')),
         }
 
     def get(self, key, default=None):
